@@ -39,8 +39,19 @@ export function SignIn(props) {
           </Typography>
         </Toolbar>
       </AppBar>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
         <Paper style={{ width: "400px", marginTop: 30, padding: "40px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 20
+            }}
+          >
+            <Button color="primary" variant="contained" onClick={handleSignIn}>
+              Sign In with google
+            </Button>
+          </div>
           <TextField
             fullWidth={true}
             placeholder="email"

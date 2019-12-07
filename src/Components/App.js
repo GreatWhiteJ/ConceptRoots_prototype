@@ -2,162 +2,85 @@ import React, { useState, useEffect } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
-import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import Drawer from "@material-ui/core/Drawer";
-import { Link, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
 import { auth } from "../firebase";
+import { makeStyles } from "@material-ui/core/styles";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import clsx from "clsx";
+import Divider from "@material-ui/core/Divider";
+import Tree from "./Tree";
+import { RootBox } from "./RootBox";
 
-export function SignIn(props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const drawerWidth = 240;
 
-  useEffect(() => {
-    const refresh = auth.onAuthStateChanged(u => {
-      if (u) {
-        props.history.push("/app");
-      }
-    });
-    return refresh;
-  }, [props.history]);
-
-  const handleSignIn = () => {
-    auth
-      .signInWithEmailAndPassword(email, password)
-      .then(() => {})
-      .catch(error => {
-        window.alert(error.message);
-      });
-  };
-
-  return (
-    <div>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography color="inherit" variant="h6">
-            Sign In
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <Paper style={{ width: "400px", marginTop: 30, padding: "40px" }}>
-          <TextField
-            fullWidth={true}
-            placeholder="email"
-            value={email}
-            onChange={e => {
-              setEmail(e.target.value);
-            }}
-          />
-          <TextField
-            fullWidth={true}
-            placeholder="password"
-            value={password}
-            type="password"
-            onChange={e => {
-              setPassword(e.target.value);
-            }}
-            style={{ marginTop: 20 }}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "30px",
-              alignItems: "center"
-            }}
-          >
-            <div>
-              Don't have an account? <Link to="/signup">Sign up!</Link>
-            </div>
-            <Button color="primary" variant="contained" onClick={handleSignIn}>
-              Sign In
-            </Button>
-          </div>
-        </Paper>
-      </div>
-    </div>
-  );
-}
-
-export function SignUp(props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleSignUp = () => {
-    auth
-      .createUserWithEmailAndPassword(email, password)
-      .then(() => {
-        props.history.push("/app");
-      })
-      .catch(error => {
-        window.alert(error.message);
-      });
-  };
-
-  return (
-    <div>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography color="inherit" variant="h6">
-            Sign Up
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <Paper style={{ width: "400px", marginTop: 30, padding: "40px" }}>
-          <TextField
-            fullWidth={true}
-            placeholder="email"
-            value={email}
-            onChange={e => {
-              setEmail(e.target.value);
-            }}
-          />
-          <TextField
-            fullWidth={true}
-            placeholder="password"
-            type="password"
-            value={password}
-            onChange={e => {
-              setPassword(e.target.value);
-            }}
-            style={{ marginTop: 20 }}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "30px",
-              alignItems: "center"
-            }}
-          >
-            <div>
-              Already have an account? <Link to="/">Sign in!</Link>
-            </div>
-            <Button color="primary" variant="contained" onClick={handleSignUp}>
-              Sign Up
-            </Button>
-          </div>
-        </Paper>
-      </div>
-    </div>
-  );
-}
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: "flex",
+    flexDirection: "verticle",
+    width: "100%",
+    height: "100%"
+  },
+  appBar: {
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    })
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    })
+  },
+  menuButton: {
+    marginRight: theme.spacing(2)
+  },
+  hide: {
+    display: "none"
+  },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0
+  },
+  drawerPaper: {
+    width: drawerWidth
+  },
+  drawerHeader: {
+    display: "flex",
+    alignItems: "center",
+    padding: theme.spacing(0, 1),
+    ...theme.mixins.toolbar,
+    justifyContent: "flex-end"
+  },
+  content: {
+    flexGrow: 1,
+    padding: 0,
+    height: "100%",
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    }),
+    marginLeft: -drawerWidth
+  },
+  contentShift: {
+    transition: theme.transitions.create("margin", {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    }),
+    marginLeft: 0
+  }
+}));
 
 export function App(props) {
-  const [drawer_open, setDrawerOpen] = useState(false);
-  const handleMenuOpen = () => {
-    setDrawerOpen(true);
-  };
-  const handleCloseDrawer = () => {
-    setDrawerOpen(false);
-  };
-
+  const [open, setOpen] = React.useState(true);
   const [user, setUser] = useState(null);
+  const classes = useStyles();
 
   useEffect(() => {
     const refresh = auth.onAuthStateChanged(u => {
@@ -169,6 +92,15 @@ export function App(props) {
     });
     return refresh;
   }, [props.history]);
+
+
+  const handleDrawerOpen = () => {
+    setOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setOpen(false);
+  };
 
   const handleSignOut = () => {
     auth
@@ -182,48 +114,53 @@ export function App(props) {
   if (!user) return <div />;
 
   return (
-    <div>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={handleMenuOpen}>
+    <div className={classes.root}>
+      <AppBar
+        position="fixed"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: open
+        })}
+      >
+        <Toolbar style={{ display: "flex", justifyContent: "spaceBetween" }}>
+          <IconButton color="inherit" onClick={handleDrawerOpen}>
             <MenuIcon />
           </IconButton>
-          <Typography
-            color="inherit"
-            variant="h6"
-            style={{ marginLeft: 15, flexGrow: 1 }}
-          >
-            News
-          </Typography>
-          <Typography color="inherit" style={{ marginRight: 30 }}>
-            Hi {user.email}
+          <Typography color="inherit" style={{ margin: "auto" }}>
+            Sined in as {user.email}
           </Typography>
           <Button color="inherit" onClick={handleSignOut}>
             Sign Out
           </Button>
         </Toolbar>
       </AppBar>
-      <Drawer open={drawer_open} onClose={handleCloseDrawer}>
-        I'm a drawer
+
+      <Drawer
+        className={classes.drawer}
+        variant="persistent"
+        anchor="left"
+        open={open}
+        classes={{
+          paper: classes.drawerPaper
+        }}
+      >
+        <div className={classes.drawerHeader}>
+          <IconButton onClick={handleDrawerClose}>
+            <ChevronLeftIcon />
+          </IconButton>
+        </div>
+        <Divider />
+        <Tree push={props.history.push} />
       </Drawer>
-      <Route
-        exact
-        path="/app"
-        render={() => {
-          return (
-            <div>
-              <div>Home Page</div>
-              <Link to="/app/product/1">Product 1</Link>
-            </div>
-          );
-        }}
-      />
-      <Route
-        path="/app/product/:id"
-        render={() => {
-          return <div>Product 1</div>;
-        }}
-      />
+      <main
+        className={clsx(classes.content, {
+          [classes.contentShift]: open
+        })}
+      >
+        <div className={classes.drawerHeader} />
+        <Route path="/app/:rootID"  render={routeProps => {
+          return <RootBox user={user} {...routeProps} />;
+        }} />
+      </main>
     </div>
   );
 }
