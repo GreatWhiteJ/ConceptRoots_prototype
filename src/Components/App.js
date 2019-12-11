@@ -78,7 +78,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export function App(props) {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const [user, setUser] = useState(null);
   const classes = useStyles();
 
@@ -92,7 +92,6 @@ export function App(props) {
     });
     return refresh;
   }, [props.history]);
-
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -157,9 +156,12 @@ export function App(props) {
         })}
       >
         <div className={classes.drawerHeader} />
-        <Route path="/app/:rootID"  render={routeProps => {
-          return <RootBox user={user} {...routeProps} />;
-        }} />
+        <Route
+          path="/app/:rootID"
+          render={routeProps => {
+            return <RootBox user={user} {...routeProps} />;
+          }}
+        />
       </main>
     </div>
   );
