@@ -7,10 +7,8 @@ import ListItem from "@material-ui/core/ListItem";
 import NewVideo from "./NewVideo";
 import DeleteVideo from "./DeleteVideo";
 import YouTube from "react-youtube";
-import GetTranscript from "./GetTranscript.js";
 import axios from "axios";
 import parseString from "xml2js";
-var XMLParser = require("react-xml-parser");
 //import './Transcriptor.js'
 
 const useStyles = makeStyles(theme => ({
@@ -77,15 +75,37 @@ export function RootBox(props) {
           });
         });
         setExpls(updated_expls);
-        setVideoID(updated_expls[0].YouTubeID);
         // axios.get(href).then(res => {
         //   var xml = new XMLParser().parseFromString(res.data);
         //   setTransObject(xml);
         // });
         tryFetchTranscript();
+        //setVideoID(updated_expls[0].YouTubeID);
       });
     return refresh;
   }, [props.match.params, href]);
+
+  useEffect(() => {
+    let refresh;
+    refresh = db
+      .collection("Explanations")
+      .where("ParentID", "==", props.match.params.rootID)
+      .onSnapshot(snapshot => {
+        const updated_expls = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          updated_expls.push({
+            ID: doc.id,
+            ParentID: data.ParentID,
+            URL: data.URL,
+            YouTubeID: data.YouTubeID
+          });
+        });
+
+        setVideoID(updated_expls[0].YouTubeID);
+      });
+    return refresh;
+  }, [props.match.params]);
 
   useEffect(() => {
     setHref("https://video.google.com/timedtext?v=" + videoID + "&lang=en");
@@ -159,6 +179,7 @@ export function RootBox(props) {
               display: "flex",
               height: 390,
               width: 640,
+              //backgroundColor: 'white',
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "vertical"
